@@ -26,7 +26,7 @@ reset:
 	
 limpa: string " "
 inicio: string "X - Pong aperte espaco para comecar"
-cenario: string " 							Bob Esponja 									Plankton"
+cenario: string "                                         Bob Esponja             Plankton"
 bob_vit: string "VITORIA DO BOB ESPONJA!"
 plank_vit: string "VITORIA DO PLANKTON!"
 	
@@ -84,7 +84,7 @@ main:
 	
 	loadn r7, #518               ; Posicao inicial da barra 2 na tela
 	loadn r1, #0              ; Unidade da barra
-	loadn r2, #0                 ; Cor branca
+	loadn r2, #512                 ; Cor verde pra barrinha 2
 	
 	mov r0, r7                   ; Copia o valor de r7 para r0
 	call PrintBarra              ; Printa a barra 2
@@ -251,10 +251,12 @@ MoveLoop:
 	jeq MoveD1                   ; Se o input for 's' move pra baixo
 	
 ret_move1:
-	
+
+	loadn r1, #'i'
 	cmp r2, r1
 	jeq MoveUp2
 	
+  loadn r0, #'j'
 	cmp r2, r0
 	jeq MoveD2
 	
@@ -320,7 +322,7 @@ MoveUp2:
 	cmp r1, r0
 	jgr ColisaoTopo
 	
-	loadn r2, #0
+	loadn r2, #512
 	loadn r1, #0
 	add r1, r1, r2
 	outchar r1, r0               ; Printa um caractere de barra na nova posicao da barra 1
@@ -345,7 +347,7 @@ MoveD2:
 	loadn r1, #' '
 	outchar r1, r0               ; Apaga o caractere mais alto da barra 1
 	
-	loadn r2, #0
+	loadn r2, #512
 	loadn r1, #0
 	add r1, r1, r2
 	
@@ -359,21 +361,39 @@ MoveD2:
 	jmp ret_move2
 	
 Delay:
-	push r0
-	push r1
-	
-	loadn r0, #0
-	loadn r1, #6000
-	
+    push r0
+    push r1
+    push r2
+     
+
+    loadn r1, #30  ; MUDANCA DE VELOCIDADE DAS BARRA, QUANTO MENOR MAIS RAPIDO "fps do joguinho"
+    loadn r2, #0   ; Constante 0 para comparação
+     
+DelayOuter:
+    loadn r0, #9000 ; Loop Interno (não precisa mexer) velocidade da bolinha maior mais lerdo
+     
+DelayInner: 
+    dec r0
+    cmp r0, r2
+    jne DelayInner
+     
+    dec r1
+    cmp r1, r2
+    jne DelayOuter
+     
+    pop r2
+    pop r1
+    pop r0
+    rts
 loopdelay:
-	inc r0
-	cmp r0, r1
-	jne loopdelay
-	
-	pop r1
-	pop r0
-	
-	rts
+    inc r0
+    cmp r0, r1
+    jne loopdelay
+ 
+    pop r1
+    pop r0
+ 
+    rts
 	
 MoveBola:
 	loadn r0, #pbola             ; Posicao da bola na tela
@@ -472,16 +492,21 @@ ColBolaEsq:
 	loadi r0, r0
 	div r0, r0, r1
 	div r1, r6, r1
-	loadn r2, #8
-	add r2, r1, r2
-	
-	cmp r0, r1
-	
-	jle nao_colidiu_plank
-	
-	cmp r0, r2
-	
-	jgr nao_colidiu_plank
+
+;FIX colisão da barra, pontinha funcionando agora 
+
+  loadn r2, #1
+    sub r1, r1, r2 ; Diminui 1 para verificar exatamente a borda superior
+    cmp r0, r1
+    jle nao_colidiu_plank ; Se bola <= (Topo-1), errou
+    
+    add r1, r1, r2 ; Restaura valor original do topo
+
+    loadn r2, #8
+    add r2, r1, r2
+
+    cmp r0, r2
+    jgr nao_colidiu_plank ; Se bola > (Topo+8), errou
 	
 ret_plank:
 	loadn r0, #1
@@ -522,16 +547,21 @@ ColBolaDir:
 	loadi r0, r0
 	div r0, r0, r1
 	div r1, r7, r1
-	loadn r2, #8
-	add r2, r1, r2
-	
-	cmp r0, r1
-	
-	jle nao_colidiu
-	
-	cmp r0, r2
-	
-	jgr nao_colidiu
+
+
+loadn r2, #1
+    sub r1, r1, r2 ; Diminui 1 para pegar o limite exato
+    cmp r0, r1
+    jle nao_colidiu ; Se bola <= (Topo-1), errou
+    
+    add r1, r1, r2 ; Restaura valor original
+
+    loadn r2, #8
+    add r2, r1, r2
+ 
+    cmp r0, r2
+ 
+    jgr nao_colidiu
 	
 col_retorno:
 	loadn r0, #0
