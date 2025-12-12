@@ -25,11 +25,18 @@ reset:
 	
 	
 limpa: string " "
-inicio: string "X - Pong aperte espaco para comecar"
 cenario: string "                                         Bob Esponja             Plankton"
 bob_vit: string "VITORIA DO BOB ESPONJA!"
 plank_vit: string "VITORIA DO PLANKTON!"
-	
+msg_pausa: string "JOGO PAUSADO"
+msg_limpa_pausa: string "            "  ; Espaços vazios para apagar a mensagem
+str_tut_btn: string "TUTORIAL: APERTE T"
+str_tit_tut: string "---------- CONTROLES ----------"
+str_tut_bob: string "BOB (ESQ):   W (SOBE)  S (DESCE)"
+str_tut_plk: string "PLANK (DIR): I (SOBE)  J (DESCE)"
+str_tut_pau: string "PAUSA: P"
+str_tut_vol: string "   APERTE ESPACO PARA VOLTAR"
+
 vbola: var #1
 	
 dbh: var #1
@@ -54,57 +61,83 @@ pplank: var #1
 	;r7 = posicao da barra 2
 	
 main:
-	loadn r3, #40                ; Tamanho da linha
-	
-	call Delay
-	call Delay
-	call Delay
-	call Delay
-	
-	call printtelaInicialScreen           ; Printa a tela de inicio
-	
-	call InputLoopIni            ; Loop esperando input para sair da tela inicial
-	
-		
-	call LimpaTela
-	
-	call Delay
-	call Delay
-	call Delay
-	call Delay
-	
-	call PrintCena               ; Printa o cenario
-	
-	loadn r6, #481               ; Posicao inicial da barra 1 na tela
-	loadn r1, #0             ; Unidade da barra
-	loadn r2, #2816              ; Cor = amarelo
-	
-	mov r0, r6                   ; Copia o valor de r6 para r0
-	call PrintBarra              ; Printa a barra 1
-	
-	loadn r7, #518               ; Posicao inicial da barra 2 na tela
-	loadn r1, #0              ; Unidade da barra
-	loadn r2, #512                 ; Cor verde pra barrinha 2
-	
-	mov r0, r7                   ; Copia o valor de r7 para r0
-	call PrintBarra              ; Printa a barra 2
-	call PrintBola               ; Printa a bola
-	
-	
+    loadn r3, #40                ; Tamanho da linha
+
+MenuPrincipal:
+    call LimpaTela
+    call Delay
+    
+    ; 1. Desenha a Arte Gráfica (Onde o título X-PONG já está desenhado)
+    call printtelaInicialScreen
+    
+    ; --- O BLOCO QUE IMPRIMIA O TÍTULO FOI REMOVIDO AQUI ---
+    
+    ; 2. Tutorial: Centralizado na Linha 1
+    ; Cálculo: Linha 1 começa no 40.
+    ; String "TUTORIAL: APERTE T" tem 18 chars. Sobram 22. Margem = 11.
+    ; Posição = 40 + 11 = 51.
+    loadn r0, #51
+    loadn r1, #str_tut_btn
+    loadn r2, #2816              ; Amarelo (Para destacar do fundo)
+    call PrintStr
+    
+    ; 3. Espera comando (Espaço ou T)
+    call InputLoopIni
+    
+    ; --- INICIO DO JOGO ---
+    call LimpaTela
+    call Delay
+    call Delay
+    call Delay
+    
+    call PrintCena
+    
+    ; (Daqui pra baixo é igual: carrega as barras e a bola)
+    loadn r6, #481
+    loadn r1, #0
+    loadn r2, #2816
+    mov r0, r6
+    call PrintBarra
+    
+    loadn r7, #518
+    loadn r1, #0
+    loadn r2, #512
+    mov r0, r7
+    call PrintBarra
+    
+    call PrintBola
+    
 move:
-	call MoveLoop                ; Chama o loop de movimento
-	jmp move                     ; LOOP DE TESTE, TROCAR POR PULO CONDICIONAL
-	
-	jmp Fim                      ; Finaliza o programa
+    call MoveLoop
+    jmp move
+    
+    jmp Fim
 	
 InputLoopIni:
-	loadn r5, #32                ; Carrega r5 com o valor de input nulo
-	inchar r2                    ; Salva o valor do input recebido em r2
-	
-	cmp r2, r5                   ; Verifica se o input foi nulo
-	jne InputLoopIni             ; Se for nulo continua no loop
-	
-	rts
+    inchar r2                    ; Lê o teclado
+    
+    ; --- Checa se é ESPAÇO (Começar Jogo) ---
+    loadn r5, #' '               ; 32 = Espaço
+    cmp r2, r5
+    jeq SaiInputIni              ; Se for espaço, retorna para a main e joga
+    
+    ; --- Checa se é 't' (Tutorial) ---
+    loadn r5, #'t'
+    cmp r2, r5
+    ceq TelaTutorial             ; Se for 't', CHAMA a tela de tutorial
+    
+    ; Se voltou do tutorial (ou apertou nada), verifica se precisa redesenhar o menu
+    cmp r2, r5                   
+    jeq InputLoopReset           ; Se acabou de voltar do tutorial, reinicia o menu
+    
+    jmp InputLoopIni             ; Se não apertou nada, continua lendo
+
+InputLoopReset:
+    pop r0                       ; Limpa a sujeira do call (hack para voltar na main)
+    jmp MenuPrincipal            ; Volta para o início da main para redesenhar o menu
+
+SaiInputIni:
+    rts
 	
 LimpaTela:
 	push r0
@@ -177,14 +210,7 @@ PrintPlacar:
 	outchar r1, r0               ; Printa a bola
 	
 	rts
-	
-PrintInicio:
-	loadn r0, #374               ; Posicao na tela onde a mensagem sera escrita
-	loadn r1, #inicio            ; Carrega r1 com o endereco do vetor que contem a mensagem
-	loadn r2, #0                 ; Cor = branco
-	
-	call PrintStr
-	rts
+
 	
 PrintCena:
 	loadn r0, #0                 ; Posicao na tela onde a mensagem sera escrita
@@ -233,22 +259,43 @@ InputLoop:
 	rts
 	
 MoveLoop:
-	call InputLoop               ; Espera um input nao nulo
-	
-	call MoveBola
-	call PrintBola
-	call PrintPlacar
-	
-	loadn r4, #'s'
-	loadn r5, #'w'
-	loadn r0, #'j'
-	loadn r1, #'i'
-	
-	cmp r2, r5
-	jeq MoveUp1                  ; Se o input for 'w' move pra cima
-	
-	cmp r2, r4
-	jeq MoveD1                   ; Se o input for 's' move pra baixo
+    call InputLoop               ; 1. Lê o teclado (uma única vez!)
+    
+    ; --- VERIFICAÇÃO DE PAUSA ---
+    loadn r0, #'p'
+    cmp r2, r0
+    ceq RotinaPausa              ; Se for 'p', pausa
+    ; ----------------------------
+
+    call MoveBola                ; 2. Move a bola e desenha o placar
+    call PrintBola
+    call PrintPlacar
+    
+    ; 3. Agora verifica o movimento das barras usando o r2 que já lemos
+    loadn r4, #'s'
+    loadn r5, #'w'
+    loadn r0, #'j'
+    loadn r1, #'i'
+    
+    cmp r2, r5
+    jeq MoveUp1                  ; Se foi 'w', move esquerda cima
+    
+    cmp r2, r4
+    jeq MoveD1                   ; Se foi 's', move esquerda baixo
+    
+ret_move1:
+    ; Recarrega as teclas da direita (correção do bug dos registradores sujos)
+    loadn r1, #'i'
+    cmp r2, r1
+    jeq MoveUp2
+    
+    loadn r0, #'j'
+    cmp r2, r0
+    jeq MoveD2
+    
+ret_move2:
+    call Delay
+    jmp MoveLoop              ; Se o input for 's' move pra baixo
 	
 ret_move1:
 
@@ -394,6 +441,96 @@ loopdelay:
     pop r0
  
     rts
+    
+ RotinaPausa:
+    push r0
+    push r1
+    push r2
+    
+    ; 1. Escreve "JOGO PAUSADO" no meio da tela
+    loadn r0, #574          ; Posição (meio da tela)
+    loadn r1, #msg_pausa    ; Endereço da mensagem
+    loadn r2, #2816         ; Cor (Amarelo)
+    call PrintStr
+
+LoopPausa:
+    ; 2. Lê o teclado constantemente
+    inchar r2
+    
+    ; 3. Verifica se apertou 'p' de novo para sair
+    loadn r0, #'p'
+    cmp r2, r0
+    jeq SaiPausa            ; Se apertou 'p', sai
+    
+    ; (Opcional) Verifica se apertou ESC para sair do jogo durante a pausa
+    loadn r0, #27           ; ESC
+    cmp r2, r0
+    jeq Fim                 ; Pula lá para o rótulo Fim do jogo
+    
+    jmp LoopPausa           ; Se não, fica preso aqui para sempre
+
+SaiPausa:
+    ; 4. Apaga a mensagem "JOGO PAUSADO" antes de voltar
+    loadn r0, #574
+    loadn r1, #msg_limpa_pausa
+    loadn r2, #0
+    call PrintStr
+    
+    ; Pequeno delay para evitar "bounce" (apertar uma vez e ele pausar/despausar mil vezes)
+    call Delay 
+    
+    pop r2
+    pop r1
+    pop r0
+    rts
+    
+TelaTutorial:
+    push r0
+    push r1
+    push r2
+    
+    call LimpaTela
+    
+    ; --- Título ---
+    loadn r0, #130          ; Posição
+    loadn r1, #str_tit_tut
+    loadn r2, #0            ; Branco
+    call PrintStr
+    
+    ; --- Bob ---
+    loadn r0, #285
+    loadn r1, #str_tut_bob
+    loadn r2, #2816         ; Amarelo
+    call PrintStr
+    
+    ; --- Plankton ---
+    loadn r0, #405
+    loadn r1, #str_tut_plk
+    loadn r2, #512          ; Verde
+    call PrintStr
+    
+    ; --- Pausa ---
+    loadn r0, #615
+    loadn r1, #str_tut_pau
+    loadn r2, #0            ; Branco
+    call PrintStr
+    
+    ; --- Voltar ---
+    loadn r0, #885
+    loadn r1, #str_tut_vol
+    loadn r2, #2304         ; Vermelho (para destacar)
+    call PrintStr
+
+LoopTut:
+    inchar r2
+    loadn r0, #' '          ; Espera Espaço
+    cmp r2, r0
+    jne LoopTut             ; Fica preso aqui até apertar espaço
+    
+    pop r2
+    pop r1
+    pop r0
+    rts                     ; Volta para o InputLoopIni
 	
 MoveBola:
 	loadn r0, #pbola             ; Posicao da bola na tela
