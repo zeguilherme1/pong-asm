@@ -3,18 +3,16 @@ reset:
 	
 limpa: string " "
 cenario: string "                                         Bob Esponja             Plankton"
-bob_vit: string "VITORIA DO BOB ESPONJA!"
-plank_vit: string "VITORIA DO PLANKTON!"
 msg_pausa: string "JOGO PAUSADO"
-msg_limpa_pausa: string "            "  ; Espaços vazios para apagar a mensagem
-str_tut_btn: string "TUTORIAL: APERTE T"
+msg_limpa_pausa: string "            "              ; Espaços vazios para apagar a mensagem
+str_tut_btn: string "TUTORIAL: APERTE T"            ; Strings da tela de Tutorial
 str_tit_tut: string "----- CONTROLES -----"
 str_tut_bob: string "BOB (ESQ):   W (SOBE)  S (DESCE)"
 str_tut_plk: string "PLANK (DIR): I (SOBE)  J (DESCE)"
 str_tut_pau: string "PAUSA: P"
 str_tut_vol: string "   APERTE ESPACO PARA VOLTAR"
 
-vbola: var #1
+vbola: var #1   ; declara variaveis
 	
 dbh: var #1
 	static dbh + #0, #0
@@ -30,9 +28,9 @@ pbob: var #1
 pplank: var #1
 	static pplank + #0, #0
 	
-	; - - - - Inicio do Programa Principal - - - - - 
+; - - -  INICIO DO PROGRAMA PRINCIPAL
 	
-	;VARIAVEIS SALVAS:
+	;Variaveis salvas:
 	;r3 = tamanho da linha
 	;r6 = posicao da barra 1
 	;r7 = posicao da barra 2
@@ -44,18 +42,13 @@ MenuPrincipal:
     call LimpaTela
     call Delay
     
-    ; 1. Desenha a Arte Gráfica (Onde o título X-PONG já está desenhado)
+    ; 1. Desenha a Arte Gráfica 
     call printtelaInicialScreen
     
-    ; --- O BLOCO QUE IMPRIMIA O TÍTULO FOI REMOVIDO AQUI ---
-    
-    ; 2. Tutorial: Centralizado na Linha 1
-    ; Cálculo: Linha 1 começa no 40.
-    ; String "TUTORIAL: APERTE T" tem 18 chars. Sobram 22. Margem = 11.
-    ; Posição = 40 + 11 = 51.
+    ; 2. Tutorial: 
     loadn r0, #51
     loadn r1, #str_tut_btn
-    loadn r2, #2816              ; Amarelo (Para destacar do fundo)
+    loadn r2, #2816              
     call PrintStr
     
     ; 3. Espera comando (Espaço ou T)
@@ -140,12 +133,12 @@ LimpaLoop:
 	pop r0
 	rts
 	
-PrintStr:                     ; Rotina de Impresao de Mensagens: r0 = Posicao da tela que o primeiro caractere da mensagem sera' impresso; r1 = endereco onde comeca a mensagem; r2 = cor da mensagem. Obs: a mensagem sera' impressa ate' encontrar " / 0"
-	push r0                      ; protege o r0 na pilha para preservar seu valor
-	push r1                      ; protege o r1 na pilha para preservar seu valor
-	push r2                      ; protege o r1 na pilha para preservar seu valor
-	push r3                      ; protege o r3 na pilha para ser usado na subrotina
-	push r4                      ; protege o r4 na pilha para ser usado na subrotina
+PrintStr:                     ; Rotina de Impresao de Mensagens: 
+	push r0                   ; r0 = Posicao da tela que o primeiro caractere da mensagem será impresso
+	push r1                   ; r1 = endereco onde comeca a mensagem
+	push r2                   ; r2 = cor da mensagem.
+	push r3                      
+	push r4                      
 	
 	loadn r3, #'\0'              ; Criterio de parada
 	
@@ -201,7 +194,7 @@ PrintBarra:
 	add r1, r1, r2               ; Define a cor da barra
 	outchar r1, r0               ; Printa o primeiro caractere da barra
 	
-	add r0, r0, r3               ; Passa pra prox pos da barra (prox linha)
+	add r0, r0, r3               ; Passa para a prox pos da barra (prox linha)
 	outchar r1, r0
 	add r0, r0, r3
 	outchar r1, r0
@@ -227,7 +220,7 @@ ColisaoTopo:
 PrintBola:
 	loadn r0, #pbola             ; Posicao da bola na tela
 	loadi r0, r0
-	loadn r1, #19          ; Define a bola com o modelo 1 do charmap
+	loadn r1, #19                
 	outchar r1, r0               ; Printa a bola
 	rts
 
@@ -390,11 +383,11 @@ Delay:
     push r2
      
 
-    loadn r1, #2  ; MUDANCA DE VELOCIDADE DAS BARRA, QUANTO MENOR MAIS RAPIDO "fps do joguinho"
+    loadn r1, #2  ; MUDANCA DE VELOCIDADE DAS BARRAS, QUANTO MENOR MAIS RAPIDO "fps do joguinho"
     loadn r2, #0   ; Constante 0 para comparação
      
 DelayOuter:
-    loadn r0, #6000 ; Loop Interno (não precisa mexer) velocidade da bolinha maior mais lerdo
+    loadn r0, #6000 ; Loop Interno velocidade da bolinha maior mais lento
      
 DelayInner: 
     dec r0
@@ -426,7 +419,7 @@ loopdelay:
     
     ; 1. Escreve "JOGO PAUSADO" no meio da tela
     loadn r0, #574          ; Posição (meio da tela)
-    loadn r1, #msg_pausa    ; Endereço da mensagem
+    loadn r1, #msg_pausa      ; Endereço da mensagem
     loadn r2, #2816         ; Cor (Amarelo)
     call PrintStr
 
@@ -471,31 +464,31 @@ TelaTutorial:
     ; --- Título ---
     loadn r0, #130          ; Posição
     loadn r1, #str_tit_tut
-    loadn r2, #0            ; Branco
+    loadn r2, #0              
     call PrintStr
     
     ; --- Bob ---
     loadn r0, #285
     loadn r1, #str_tut_bob
-    loadn r2, #2816         ; Amarelo
+    loadn r2, #2816         
     call PrintStr
     
     ; --- Plankton ---
     loadn r0, #405
     loadn r1, #str_tut_plk
-    loadn r2, #512          ; Verde
+    loadn r2, #512          
     call PrintStr
     
     ; --- Pausa ---
     loadn r0, #615
     loadn r1, #str_tut_pau
-    loadn r2, #0            ; Branco
+    loadn r2, #0            
     call PrintStr
     
     ; --- Voltar ---
     loadn r0, #885
     loadn r1, #str_tut_vol
-    loadn r2, #2304         ; Vermelho (para destacar)
+    loadn r2, #2304         
     call PrintStr
 
 LoopTut:
@@ -540,8 +533,8 @@ ret_b1:
 ret_b2:
 	rts
 	
-mbd:
-	loadn r0, #pbola
+mbd:                        ; Move bola para baixo
+ 	loadn r0, #pbola
 	loadi r0, r0
 	
 	loadn r1, #1120
@@ -561,7 +554,7 @@ ColBolaBaixo:
 	store dbv, r0
 	jmp MoveBola
 	
-mbu:
+mbu:                        ; Move bola para cima
 	loadn r0, #pbola
 	loadi r0, r0
 	
@@ -582,7 +575,7 @@ ColBolaCima:
 	store dbv, r0
 	jmp MoveBola
 	
-mbl:
+mbl:                        ; Move bola para esquerda
 	loadn r0, #pbola
 	loadn r1, #40
 	loadi r0, r0
@@ -637,7 +630,7 @@ nao_colidiu_plank:
 	call ChecarVitoria
 	jmp ret_plank
 	
-mbr:
+mbr:                        ; Move bola para direita
 	loadn r0, #pbola
 	loadn r1, #40
 	loadi r0, r0
@@ -716,18 +709,18 @@ ChecarVitoria:
 	
 VitoriaBob:
 	call PrintPlacar
-	loadn r0, #611               ; Posicao na tela onde a mensagem sera escrita
-	loadn r1, #bob_vit           ; Carrega r1 com o endereco do vetor que contem a mensagem
-	loadn r2, #2816              ; Cor = branco
+	loadn r0, #611               
+	loadn r1, #bob_vit             ; Carrega r1 com a tela de vitória
+	loadn r2, #2816              
 	call PrintStr
 	
 	jmp Fim
 	
 VitoriaPlankton:
 	call PrintPlacar
-	loadn r0, #613               ; Posicao na tela onde a mensagem sera escrita
-	loadn r1, #plank_vit         ; Carrega r1 com o endereco do vetor que contem a mensagem
-	loadn r2, #0                 ; Cor = branco
+	loadn r0, #613               
+	loadn r1, #plank_vit           ; Carrega r1 com a tela de vitória
+	loadn r2, #0                   
 	call PrintStr
 	jmp Fim
 	
@@ -789,10 +782,10 @@ ReiniciarJogo:
 ; --- Bloco que encerra o programa ---
 SairDoJogo:
     call LimpaTela        ; Opcional: Limpa a tela para não ficar congelada
-    halt                  ; Para o processador definitivamente                ; Encerra o programa
+    halt                  ; Encerra o programa
 
 
-; ----------------------------------------- TELAS ---------------------------------------------
+; - - - - - TELAS 
 plankVitoria : var #1200
   ;Linha 0
   static plankVitoria + #0, #3889
