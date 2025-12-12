@@ -72,8 +72,8 @@ Do todos os comandos...
 #define DIV	35      // "100011"; -- DIV Rx Ry Rz 			-- Rx <- Ry / Rz / Rx <- Ry / Rz + C  -- b0=Carry		Format: < inst(6) | Rx(3) | Ry(3) | Rz(3)| C >
 #define INC	36      // "100100"; -- INC Rx / DEC Rx                 		-- Rx <- Rx + 1 / Rx <- Rx - 1  -- b6= INC/DEC : 0/1	Format: < inst(6) | Rx(3) | b6 | xxxxxx >
 #define LMOD 37     // "100101"; -- MOD Rx Ry Rz   			-- Rx <- Ry MOD Rz 	  	Format: < inst(6) | Rx(3) | Ry(3) | Rz(3)| x >
-
-
+#define MIN 38 		// "100110"; -- MIN Rx Ry Rz				-- Rx <- Min(Ry) Rz <- Ry >> 15 
+#define MAX 39		// "100111"; -- MAX 
 // Logic Instructions (All should begin wiht "01"):
 #define LOGIC 1
 #define LAND 18     // "010010"; -- AND Rx Ry Rz  	-- Rz <- Rx AND Ry	Format: < inst(6) | Rx(3) | Ry(3) | Rz(3)| x >
@@ -414,11 +414,23 @@ loop:
 				case MULT:
 				case DIV:
 				case LMOD:
+				case MIN:
+				case MAX:
+					selM3 = ry;
+					selM4 = rz;
+					carry =0;
+					OP = CMP;
+					selM6 = sULA;
+					LoadFR = 1;
+					// -----------------------------
+					state=STATE_EXECUTE;
+					break;
+					
 				case LAND:
 				case LOR:
 				case LXOR:
 				case LNOT:
-					// reg[rx] = reg[ry] + reg[rz]; // Soma ou outra operacao
+					// reg[rx] = reg[ry] + 	reg[rz]; // Soma ou outra operacao
 					selM3 = ry;
 					selM4 = rz;
 					selM2 = sULA;
@@ -665,8 +677,27 @@ loop:
 					// -----------------------------
 					state=STATE_FETCH;
 					break;
+				case MAX:
+					if(FR[1] == 1) {
+							selM2 = sM4;
+						} else {
+							selM2 = sM3;
+						}
 
+						LoadReg[rx] = 1;
+						state=STATE_FETCH;
+						break;
+					
+				case MIN:
+					if(FR[0] == 1) {
+						selM2 = sM4;
+					} else {
+						selM2 = sM3;
+					}
 
+					LoadReg[rx] = 1;
+					state=STATE_FETCH;
+					break;
 			}
 
 			//state=STATE_EXECUTE2;
@@ -897,7 +928,13 @@ ResultadoUla ULA(unsigned int x, unsigned int y, unsigned int OP, int carry) {
 						result = x%y;
 						auxFRbits[DIV_BY_ZERO] = 0;
 					}
-					break;	
+					break;
+				case MIN:
+					result = (x < y ? x : y);
+					break;
+				case MAX:
+					result = (x > y ? x : y);
+					break;
 				default:
 					result = x;
 			}

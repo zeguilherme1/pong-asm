@@ -202,6 +202,8 @@ void DetectarLabels(void)
             case SUBC_CODE :
             case MUL_CODE :
             case DIV_CODE :
+            case MIN_CODE :
+            case MAX_CODE :
 	    case LMOD_CODE :	    
             case AND_CODE :
             case OR_CODE :
@@ -424,6 +426,55 @@ void MontarInstrucoes(void)
                    ==============
                 */
                 
+
+                case MIN_CODE:
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    parser_Match(',');
+                    str_tmp2 = parser_GetItem_s();
+                    val2 = BuscaRegistrador(str_tmp2);
+                    free(str_tmp2);
+                    parser_Match(',');
+                    str_tmp3 = parser_GetItem_s();
+                    val3 = BuscaRegistrador(str_tmp2);
+                    free(str_tmp3 );
+                    str_tmp1 = ConverteRegistrador(val1);
+                    str_tmp2 = ConverteRegistrador(val2);
+                    str_tmp3 = ConverteRegistrador(val3);
+
+                    sprintf(str_msg, "%s%s%s%s0", MIN, str_tmp1, str_tmp2, str_tmp3);
+                    free(str_tmp1);
+                    free(str_tmp2);
+                    free(str_tmp3);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+
+                case MAX_CODE:
+                    str_tmp1 = parser_GetItem_s();
+                    val1 = BuscaRegistrador(str_tmp1);
+                    free(str_tmp1);
+                    parser_Match(',');
+                    str_tmp2 = parser_GetItem_s();
+                    val2 = BuscaRegistrador(str_tmp2);
+                    free(str_tmp2);
+                    parser_Match(',');
+                    str_tmp3 = parser_GetItem_s();
+                    val3 = BuscaRegistrador(str_tmp2);
+                    free(str_tmp3 );
+                    str_tmp1 = ConverteRegistrador(val1);
+                    str_tmp2 = ConverteRegistrador(val2);
+                    str_tmp3 = ConverteRegistrador(val3);
+
+                    sprintf(str_msg, "%s%s%s%s0", MAX, str_tmp1, str_tmp2, str_tmp3);
+                    free(str_tmp1);
+                    free(str_tmp2);
+                    free(str_tmp3);
+                    parser_Write_Inst(str_msg,end_cnt);
+                    end_cnt += 1;
+                    break;
+
                 case INPUT_CODE :
                     str_tmp1 = parser_GetItem_s();
                     val1 = BuscaRegistrador(str_tmp1);
@@ -2243,6 +2294,10 @@ int BuscaInstrucao(char * nome)
     else if (strcmp(str_tmp,SUBC_STR) == 0)
     {
         return SUBC_CODE;
+    }else if (strcmp(str_tmp, MIN_STR) == 0){
+        return MIN_CODE;
+    }else if (strcmp(str_tmp, MAX_STR) == 0){
+        return MAX_CODE;
     }
     else if (strcmp(str_tmp,MUL_STR) == 0)
     {
