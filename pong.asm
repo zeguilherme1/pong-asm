@@ -366,11 +366,11 @@ Delay:
     push r2
      
 
-    loadn r1, #30  ; MUDANCA DE VELOCIDADE DAS BARRA, QUANTO MENOR MAIS RAPIDO "fps do joguinho"
+    loadn r1, #2  ; MUDANCA DE VELOCIDADE DAS BARRA, QUANTO MENOR MAIS RAPIDO "fps do joguinho"
     loadn r2, #0   ; Constante 0 para comparação
      
 DelayOuter:
-    loadn r0, #9000 ; Loop Interno (não precisa mexer) velocidade da bolinha maior mais lerdo
+    loadn r0, #6000 ; Loop Interno (não precisa mexer) velocidade da bolinha maior mais lerdo
      
 DelayInner: 
     dec r0
@@ -642,24 +642,41 @@ init_delay:
 	rts
 	
 Fim:
-	loadn r5, #32                ; Carrega r5 com o valor de input nulo
-	inchar r2                    ; Salva o valor do input recebido em r2
-	
-	cmp r2, r5                   ; Verifica se o input foi nulo
-	jne Fim                      ; Se for nulo continua no loop
-	
-	loadn r0, #0
-	store pbob, r0
-	store pplank, r0
-	
-	loadn r0, #0                 ; Posicao na tela onde a mensagem sera escrita
-	loadn r1, #limpa             ; Carrega r1 com o endereco do vetor que contem a mensagem
-	loadn r2, #0                 ; Cor = branco
-	
-	call PrintStr
-	
-	jmp reset
-	halt                         ; Encerra o programa
+	Fim:
+    inchar r2             ; Lê o teclado
+    
+    ; Opção 1: Jogar Novamente (0)
+    loadn r5, #'0'        ; Carrega 0
+    cmp r2, r5            ; É 0?
+    jeq ReiniciarJogo     ; Se sim, vai limpar e resetar
+    
+    ; Opção 2: Sair (1)
+    loadn r5, #'1'         ; Carrega 1
+    cmp r2, r5            ; É 1?
+    jeq SairDoJogo        ; Se sim, desliga
+    
+    jmp Fim               ; Se não apertou nada útil, continua esperando
+
+; Bloco que faz o reinício
+ReiniciarJogo:
+    loadn r0, #0
+    store pbob, r0
+    store pplank, r0
+    
+    loadn r0, #0          
+    loadn r1, #limpa      
+    loadn r2, #0          
+    
+    call PrintStr         ; Limpa a mensagem de vitória
+    call LimpaTela        ; Garante que a tela toda apaga
+    
+    jmp reset             ; Volta lá pro topo
+
+; --- Bloco que encerra o programa ---
+SairDoJogo:
+    call LimpaTela        ; Opcional: Limpa a tela para não ficar congelada
+    halt                  ; Para o processador definitivamente                ; Encerra o programa
+
 
 ; ----------------------------------------- TELAS ---------------------------------------------
 plankVitoria : var #1200
