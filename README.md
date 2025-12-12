@@ -5,7 +5,7 @@
 This code was made for the final project of our class "Organização e Arquitetura de Computadores - SSC0513", the main goal of our project is to implement the classic Pong game with the SpongeBob SquarePants theme.
 
 
-![Initial screen image example](telaInicial.png)
+![Initial screen image example](./telas/game.gif)
 
 ## How to play it?
 
